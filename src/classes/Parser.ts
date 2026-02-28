@@ -1,6 +1,7 @@
 import {FileType, RegexType, TodoType} from '../types/all';
 import {UserSettings} from './UserSettings';
 import {Set, Queue, startsWithOne} from '../utils/all';
+import {Logger} from './Logger';
 
 export class Parser {
   static parse(files: FileType[]): TodoType[] {
@@ -57,6 +58,7 @@ export class Parser {
       }
     }
     catch (e) {
+      Logger.error(e);
     }
     finally {
       return matches;
