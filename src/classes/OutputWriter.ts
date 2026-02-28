@@ -12,6 +12,7 @@ enum State {
 
 export class OutputWriter {
   private static outputChannel = OutputWriter.createOutputChannel();
+  private static diagnostics = languages.createDiagnosticCollection("TODOs");
 
   private static state = State.Idle;
   private static lineIndex: number;
@@ -28,6 +29,7 @@ export class OutputWriter {
     assert(OutputWriter.state === State.Idle, "Previous work is not finished.");
 
     OutputWriter.lineIndex = 1;
+    OutputWriter.diagnostics.clear();
     OutputWriter.showPanel();
     OutputWriter.state = State.Begin;    
   }
@@ -76,7 +78,7 @@ export class OutputWriter {
 
     const showInProblems = UserSettings.getInstance().ShowInProblems.getValue();
 
-    let diagnostics = showInProblems ? languages.createDiagnosticCollection("TODOs") : null;
+    let diagnostics = showInProblems ? OutputWriter.diagnostics : null;
 
     for (let todo of todos) {
       if (showInProblems) {

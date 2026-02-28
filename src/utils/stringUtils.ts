@@ -20,7 +20,7 @@ export function hashCode(str: string): number {
  */
 export function getFileExtension(filename: string): string {
   if (!filename)
-    return;
+    return '';
   let ext = '', temp = '';
   for (let i = filename.length - 1; i >= 0; --i) {
     let char = filename[i];

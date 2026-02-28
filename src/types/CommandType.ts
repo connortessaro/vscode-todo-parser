@@ -141,6 +141,7 @@ export class CancelCommand implements CommandType {
   execute(): Promise<any> {
     return new Promise<any>(function (resolve, reject) {
       tokenSource.cancel();
+      tokenSource = new CancellationTokenSource();
       resolve('Cancel triggered.');
     });
   }

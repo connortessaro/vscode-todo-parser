@@ -40,6 +40,7 @@ export class CommandListener {
     // Add to list of disposed items when deactivated
     context.subscriptions.push(parseAllFilesCommand);
     context.subscriptions.push(parseCurrentFileCommand);
+    context.subscriptions.push(cancelParseAllFilesCommand);
 
     // Parse the current file once at the beginning
     callback(new UpdateStatusBarCommand());
