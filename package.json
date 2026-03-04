@@ -1,105 +1,39 @@
 {
-  "name": "vscode-todo-parser",
-  "displayName": "TODO Parser",
-  "description": "Parse TODOs in your working files.",
-  "version": "1.9.1",
-  "publisher": "minhthai",
-  "engines": {
-    "vscode": "^1.2.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
-  "main": "./out/src/extension",
-  "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
-  },
-  "devDependencies": {
-    "typescript": "^1.6.2",
-    "vscode": "^0.11.x"
-  },
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.parseAllFiles",
-        "title": "Parse TODOs (all files)"
-      },
-      {
-        "command": "extension.parseCurrentFile",
-        "title": "Parse TODOs (current document)"
-      },
-      {
-        "command": "extension.cancelParseAllFiles",
-        "title": "Cancel TODOs Parser"
-      }
+    "name": "vscode-todo-parser",
+    "version": "0.1.0",
+    "description": "A VS Code extension that parses and manages TODO comments",
+    "main": "dist/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^20.19.35",
+        "@types/vscode": "^1.109.0",
+        "@typescript-eslint/eslint-plugin": "^6.21.0",
+        "@typescript-eslint/parser": "^6.21.0",
+        "@vscode/test-electron": "^2.5.2",
+        "chance": "^1.1.13",
+        "eslint": "^8.57.1",
+        "fs-extra": "^11.3.2",
+        "glob": "^10.4.5",
+        "typescript": "^5.9.3"
+    },
+    "engines": {
+        "vscode": "^1.84.0"
+    },
+    "categories": [
+        "Other"
     ],
-    "configuration": {
-      "type": "object",
-      "title": "TodoParser configuration",
-      "properties": {
-        "TodoParser": {
-          "type": "object",
-          "description": "Configurations for the extension.",
-          "properties": {
-            "markers": {
-              "type": "array",
-              "description": "An array of words that signal the start of TODOs, or tuples containig the words and their priorities.",
-              "items": {
-                "type": [
-                  "string",
-                  "array"
-                ],
-                "description": "Word that signals the start of a TODO comment, or a tuple of the word and comment priority.",
-                "items": [
-                  {
-                    "type": "string",
-                    "description": "Word that signals the start of a TODO comment."
-                  },
-                  {
-                    "enum": [
-                      "Error",
-                      0,
-                      "Warning",
-                      1,
-                      "Information",
-                      2,
-                      "Hint",
-                      3
-                    ],
-                    "description": "The priority level of the TODO comment. Determines how the TODO item is rendered in the Problems panel"
-                  }
-                ]
-              }
-            },
-            "showInProblems": {
-              "type": "boolean",
-              "description": "If true, show TODO comments in Problems panel."
-            }
-          }
-        }
-      }
+    "license": "MIT",
+    "dependencies": {
+        "mocha": "^11.7.5",
+        "typescript-collections": "^1.3.3",
+        "vscode": "^1.1.37"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kantlove/vscode-todo-parser.git"
-  },
-  "icon": "images/icon.png",
-  "galleryBanner": {
-    "color": "#ecf0f1",
-    "theme": "light"
-  },
-  "dependencies": {
-    "chance": "^1.0.4",
-    "fs-extra": "^0.30.0",
-    "typescript": "^1.8.10",
-    "typescript-collections": "^1.1.2"
-  },
-  "license": "SEE LICENSE IN LICENSE"
 }

@@ -43,9 +43,9 @@ class StatusState {
 export class StatusBarManager {
   private static instance: StatusBarManager;
   
-  private statusBarItem: StatusBarItem;
-  private defaultState: StatusState;
-  private workingState: StatusState;
+  private statusBarItem!: StatusBarItem;
+  private defaultState!: StatusState;
+  private workingState?: StatusState;
 
   constructor() {
     if(!StatusBarManager.instance) {
@@ -61,7 +61,7 @@ export class StatusBarManager {
 
   private init() {
     // Create a TODO counter for current file
-    this.statusBarItem =  window.createStatusBarItem(StatusBarAlignment.Left);
+    this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
 
     this.defaultState = new StatusState("$(checklist) 0", PARSE_CURRENT_FILE_COMMAND, "0 TODO");
     this.setState(this.defaultState);

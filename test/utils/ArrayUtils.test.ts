@@ -53,12 +53,14 @@ suite("Utils - ArrayUtils", () => {
 
   test("1 element, chunkSize = 0 -> Empty array", () => {
     let rs = sliceArray(randomArray(1), 0);
+    if (!rs) throw new Error('rs is falsy')
     assert.equal(rs.length, 0);
   });
 
   test("1 element, chunkSize = 1 -> Array contains the original array", () => {
     let original = randomArray(1);
     let rs = sliceArray(original, 1);
+    if (!rs) throw new Error('rs is falsy')
     assert.equal(rs.length, 1);
     assert.ok(arrayEqual(rs[0], original));
   });
@@ -66,6 +68,7 @@ suite("Utils - ArrayUtils", () => {
   test("1 element, chunkSize = 1 -> Array contains the original array", () => {
     let original = randomArray(1);
     let rs = sliceArray(original, 1);
+    if (!rs) throw new Error('rs is falsy')
     assert.equal(rs.length, 1);
     assert.ok(arrayEqual(arrayFlatten(rs), original));
   });
@@ -73,6 +76,7 @@ suite("Utils - ArrayUtils", () => {
   test("1 element, chunkSize = 2 -> Array contains the original array", () => {
     let original = randomArray(1);
     let rs = sliceArray(original, 2);
+    if (!rs) throw new Error('rs is falsy')
     assert.equal(rs.length, 1);
     assert.ok(arrayEqual(arrayFlatten(rs), original));
   });
@@ -80,16 +84,20 @@ suite("Utils - ArrayUtils", () => {
   test("10 element, chunkSize = 2 -> [[6 items], [4 items]]", () => {
     let original = randomArray(10), chunk = 6;
     let rs = sliceArray(original, chunk);
+    if (rs) assert.ok(arrayEqual(arrayFlatten(rs), original));
+    else throw new Error('rs is falsy')
     assert.equal(rs.length, 2);
     assert.equal(rs[0].length, chunk);
     assert.equal(rs[1].length, original.length - chunk);
-    assert.ok(arrayEqual(arrayFlatten(rs), original));
+    
   });
 
   test("1000 element, chunkSize = 2 -> [...500 items...]", () => {
     let original = randomArray(1000), chunk = 2;
     let rs = sliceArray(original, chunk);
-    assert.equal(rs.length, Math.floor(original.length / chunk));
+    if (rs) assert.equal(rs.length, Math.floor(original.length / chunk));
+    else throw new Error('rs is falsy');
+
     assert.ok(arrayEqual(arrayFlatten(rs), original));
   });
 });

@@ -20,7 +20,7 @@ export function hashCode(str: string): number {
  */
 export function getFileExtension(filename: string): string {
   if (!filename)
-    return;
+    return "";
   let ext = '', temp = '';
   for (let i = filename.length - 1; i >= 0; --i) {
     let char = filename[i];
@@ -39,7 +39,7 @@ export function getFileExtension(filename: string): string {
  */
 export function getFolderName(path: string): string {
   if (!path)
-    return;
+    return "";
   // Remove the last dash (/)
   if(path[path.length - 1] === '\\' || path[path.length - 1] === '/')
     path = path.substr(0, path.length - 1);
@@ -72,5 +72,5 @@ export function startsWithOne(str: string, prefixes: string[]): [boolean, string
     if ((new RegExp('^' + p, 'i')).test(str))
       return [true, p.replace(/\\b/g, '')];
   }
-  return [false, null];
+  return [false, ""];
 }

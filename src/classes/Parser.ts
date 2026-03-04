@@ -1,10 +1,10 @@
-import {FileType, RegexType, TodoType} from '../types/all';
+import {FileType, TodoType} from '../types/all';
 import {UserSettings} from './UserSettings';
-import {Set, Queue, startsWithOne} from '../utils/all';
+import {startsWithOne} from '../utils/all';
 
 export class Parser {
   static parse(files: FileType[]): TodoType[] {
-    let todos = [];
+    let todos: TodoType[] = [];
     for(let file of files) {
       todos = todos.concat(this.parseSingleFile(file));
     }
@@ -12,7 +12,7 @@ export class Parser {
   }
 
   private static parseSingleFile(file: FileType): TodoType[] {
-    let todos = [];
+    let todos: TodoType[] = [];
     let regex = file.getLanguage().getRegex();
     let blocks: Array<[string, number, string]> = [[file.getFile().getText(), 0, ""]]; // an item = [text, line number, marker]
     
@@ -20,7 +20,7 @@ export class Parser {
       return todos;
     
     for(let reg of regex.getSteps()) {
-      let matched = [];
+      let matched: Array<[string, number, string]> = [];
       for(let item of blocks) {
         matched = matched.concat(this.matchText(item, reg));
       }
@@ -38,14 +38,14 @@ export class Parser {
    * Match text by a regex string
    * @return An array of tuples. Each tuple is [matched text, line number, marker]
    */
-  private static matchText(block: [string, number], regex: RegExp): [string, number, string][] {
+  private static matchText(block: [string, number, string], regex: RegExp): [string, number, string][] {
     let text = block[0], line = block[1];
-    let matches = [];
+    let matches: Array<[string, number, string]> = [];
     let lineIndex = Parser.computeIndexList(text.split("\n"));
-    let match;
+    let match: RegExpExecArray | null;
 
     try {
-      while (match = regex.exec(text)) {
+      while ((match = regex.exec(text)) !== null) {
         let marker = "";
         let matched_text = (match[1]) ? match[1] : match[0];
         [matched_text, marker] = this.refine(matched_text);
@@ -64,7 +64,7 @@ export class Parser {
   }
 
   private static computeIndexList(lines: string[]): number[] {
-    let index = [];
+    let index: number[] = [];
     let chars = 0, n = lines.length;
     for(let i = 0; i < n; ++i) {
       index[i] = chars;
@@ -73,7 +73,7 @@ export class Parser {
     return index;
   }
 
-  private static lineNumberFromIndex(indices: number[], key: number) {
+  private static lineNumberFromIndex(indices: number[], key: number): number {
     let low = 0, hi = indices.length - 1;
     while(low <= hi) {
       let mid = low + (((hi - low) / 2) | 0);
@@ -95,7 +95,7 @@ export class Parser {
     let markers = UserSettings.getInstance().Markers.getMarkers();
     let marker = "";
     let lines = str.split('\n');
-    let todoLines = [];
+    let todoLines: string[] = [];
 
     for (let ln of lines) {
       ln = ln.trim();

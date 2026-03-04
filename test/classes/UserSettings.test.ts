@@ -1,6 +1,13 @@
-import * as assert from 'assert';
-import {UserSettings, SetSettingEntry, MarkersSettingEntry} from '../../src/classes/all';
-var Chance = require('chance');
+import * as assert from "assert";
+import {
+  UserSettings,
+  SetSettingEntry,
+  MarkersSettingEntry,
+} from "../../src/classes/all";
+
+import MarkerType from "../../src/classes/UserSettings";
+
+var Chance = require("chance");
 
 const chance = new Chance();
 
@@ -8,8 +15,8 @@ function randomInt(): number {
   return chance.integer();
 }
 
-function randomIntRange(min, max): number {
-  return chance.integer({ "min": min, "max": max });
+function randomIntRange(min: number, max: number): number {
+  return chance.integer({ min: min, max: max });
 }
 
 suite("Classes - UserSettings", function () {
@@ -19,56 +26,57 @@ suite("Classes - UserSettings", function () {
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      value.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      value.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let v of value) {
-      assert.ok(
-        entry.contains(v), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
-      );
+    for (let v of value) {
+      assert.ok(entry.contains(v), `\nExpected: ${value}\nGot: ${entry.getValue()}`);
     }
   });
 
   test("[a, a] -> [a]", () => {
-    const size = 2, base = 1;
+    const size = 2,
+      base = 1;
     let value = ["a", "a"];
     let entry = new SetSettingEntry<any[]>("entryName", []);
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, base, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      base,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < base; ++i) {
+    for (let i = 0; i < base; ++i) {
       assert.ok(
-        entry.contains(value[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(value[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
 
   test("[a, b, a, b] -> [a, b]", () => {
-    const size = 4, base = 2;
+    const size = 4,
+      base = 2;
     let value = ["a", "b", "a", "b"];
     let entry = new SetSettingEntry<any[]>("entryName", []);
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, base, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      base,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < base; ++i) {
+    for (let i = 0; i < base; ++i) {
       assert.ok(
-        entry.contains(value[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(value[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
 
   test("[] -> []", () => {
-    let value = [];
+    let value: MarkerType = [];
     let entry = new SetSettingEntry<any[]>("entryName", []);
     entry.setValue(value);
 
@@ -91,15 +99,12 @@ suite("Classes - UserSettings", function () {
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      value.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      value.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let v of value) {
-      assert.ok(
-        entry.contains(v), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
-      );
+    for (let v of value) {
+      assert.ok(entry.contains(v), `\nExpected: ${value}\nGot: ${entry.getValue()}`);
     }
   });
 
@@ -109,14 +114,14 @@ suite("Classes - UserSettings", function () {
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      _default.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      _default.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < _default.length; ++i) {
+    for (let i = 0; i < _default.length; ++i) {
       assert.ok(
-        entry.contains(_default[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(_default[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
@@ -128,50 +133,50 @@ suite("Classes - UserSettings", function () {
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      merged.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      merged.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < merged.length; ++i) {
+    for (let i = 0; i < merged.length; ++i) {
       assert.ok(
-        entry.contains(merged[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(merged[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
 
   test("[] -> [_default]", () => {
-    let value = [];
+    let value: MarkerType = [];
     let entry = new MarkersSettingEntry("markerEntryName", _default);
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      _default.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      _default.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < _default.length; ++i) {
+    for (let i = 0; i < _default.length; ++i) {
       assert.ok(
-        entry.contains(_default[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(_default[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
 
   test("undefined -> [_default]", () => {
-    let value = undefined;
+    let value: MarkerType = []
     let entry = new MarkersSettingEntry("markerEntryName", _default);
     entry.setValue(value);
 
     assert.equal(
-      entry.getValue().length, 
-      _default.length, 
-      `\nExpected: ${value}\nGot: ${entry.getValue()}`
+      entry.getValue().length,
+      _default.length,
+      `\nExpected: ${value}\nGot: ${entry.getValue()}`,
     );
-    for(let i = 0; i < _default.length; ++i) {
+    for (let i = 0; i < _default.length; ++i) {
       assert.ok(
-        entry.contains(_default[i]), 
-        `\nExpected: ${value}\nGot: ${entry.getValue()}`
+        entry.contains(_default[i]),
+        `\nExpected: ${value}\nGot: ${entry.getValue()}`,
       );
     }
   });
@@ -189,7 +194,7 @@ suite("Classes - UserSettings", function () {
     inc.setValue(value);
     st.mergeSettings();
 
-    for(let v of value) {
+    for (let v of value) {
       assert.ok(st.isFileEligible(v));
     }
 
@@ -205,7 +210,7 @@ suite("Classes - UserSettings", function () {
     exc.setValue(value);
     st.mergeSettings();
 
-    for(let v of value) {
+    for (let v of value) {
       assert.ok(!st.isFileEligible(v));
     }
 
@@ -214,15 +219,18 @@ suite("Classes - UserSettings", function () {
 
   test("File include [a, b], exclude [a] -> [a, b]", () => {
     let st = UserSettings.getInstance();
-    let inc = st.Inclusions, exc = st.Exclusions;
-    let oldInc = inc.getValue(), oldExc = exc.getValue();
+    let inc = st.Inclusions,
+      exc = st.Exclusions;
+    let oldInc = inc.getValue(),
+      oldExc = exc.getValue();
 
-    let incValue = ["a", "b"], excValue = ["a"];
+    let incValue = ["a", "b"],
+      excValue = ["a"];
     inc.setValue(incValue);
     exc.setValue(excValue);
     st.mergeSettings();
 
-    for(let v of incValue) {
+    for (let v of incValue) {
       assert.ok(st.isFileEligible(v));
     }
 
@@ -232,10 +240,13 @@ suite("Classes - UserSettings", function () {
 
   test("File include [a], exclude [a, b] -> [a]", () => {
     let st = UserSettings.getInstance();
-    let inc = st.Inclusions, exc = st.Exclusions;
-    let oldInc = inc.getValue(), oldExc = exc.getValue();
+    let inc = st.Inclusions,
+      exc = st.Exclusions;
+    let oldInc = inc.getValue(),
+      oldExc = exc.getValue();
 
-    let incValue = ["a"], excValue = ["a", "b"];
+    let incValue = ["a"],
+      excValue = ["a", "b"];
     inc.setValue(incValue);
     exc.setValue(excValue);
     st.mergeSettings();
@@ -249,15 +260,18 @@ suite("Classes - UserSettings", function () {
 
   test("File include [a, b], exclude [a, b] -> [a, b]", () => {
     let st = UserSettings.getInstance();
-    let inc = st.Inclusions, exc = st.Exclusions;
-    let oldInc = inc.getValue(), oldExc = exc.getValue();
+    let inc = st.Inclusions,
+      exc = st.Exclusions;
+    let oldInc = inc.getValue(),
+      oldExc = exc.getValue();
 
-    let incValue = ["a", "b"], excValue = ["a", "b"];
+    let incValue = ["a", "b"],
+      excValue = ["a", "b"];
     inc.setValue(incValue);
     exc.setValue(excValue);
     st.mergeSettings();
 
-    for(let v of incValue) {
+    for (let v of incValue) {
       assert.ok(st.isFileEligible(v));
     }
 
@@ -268,7 +282,7 @@ suite("Classes - UserSettings", function () {
   /**
    * The 'only' entry and folder exclusion entry
    */
-  
+
   test("Folder exclude [a, b] -> cannot use [a, b]", () => {
     let st = UserSettings.getInstance();
     let exc = st.FolderExclusions;
@@ -277,11 +291,10 @@ suite("Classes - UserSettings", function () {
     let excValue = ["a", "b"];
     exc.setValue(excValue);
 
-    for(let v of excValue) {
+    for (let v of excValue) {
       assert.ok(!st.isFolderEligible(v));
     }
 
     exc.setValue(oldExc);
   });
-
 });

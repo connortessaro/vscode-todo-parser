@@ -1,7 +1,7 @@
-import {FileType} from './FileType';
-import {languages, Uri} from 'vscode';
-import {SCHEME} from '../const/all'
-import {UserSettings} from '../classes/UserSettings';
+import { FileType } from "./FileType";
+import { languages, Uri } from "vscode";
+import { SCHEME } from "../const/all";
+import { UserSettings } from "../classes/UserSettings";
 
 export class TodoType {
   content: string;
@@ -37,18 +37,18 @@ export class TodoType {
   }
 
   getDisplayString(): string {
-    let url = this.getFile().getFile().uri.toString();
-    // to take it to the properline
-    let middle = "#";
-    // what if the file is not saved?
-    if (url.split(":")[0].toString() == "untitled") {
-        middle = "; Line Number: ";
+    const url = this.getFile().getFile().uri;
+    let location;
+
+    if (url.scheme == ("untitled")) {
+      location = `${url.toString()}, Line Number: ${this.getLineNumber()}`;
+    } else {
+      location = `${url.fsPath}:${this.getLineNumber()}`;
     }
-    let path = url + middle + this.getLineNumber();
-    return `From ${path}\n----------------------------------\n${this.getContent()}`;
+    return `${location}\n${this.getContent()}`;
   }
 
   toString(): string {
-    return this.getFile() + "\n" + this.getContent;
+    return this.getFile() + "\n" + this.getContent();
   }
 }

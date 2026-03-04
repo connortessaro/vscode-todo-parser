@@ -20,9 +20,7 @@ export class LanguageType {
   }
 
   static fromId(id: string): LanguageType {
-    if (!id || !map.containsKey(id))
-      return LanguageName.PLAINTEXT; // default is PlainText
-    return map.getValue(id);
+    return map.getValue(id) || LanguageName.PLAINTEXT;
   }
 
   toString(): string {

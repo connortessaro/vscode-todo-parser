@@ -1,4 +1,4 @@
-import {window, languages, OutputChannel, Diagnostic, Range, StatusBarItem, StatusBarAlignment} from 'vscode';
+import {window, languages, OutputChannel, Diagnostic, DiagnosticCollection, Range} from 'vscode';
 import {UserSettings} from './UserSettings';
 import {TodoType} from '../types/all';
 import {CHANNEL_NAME} from '../const/all';
@@ -76,15 +76,17 @@ export class OutputWriter {
 
     const showInProblems = UserSettings.getInstance().ShowInProblems.getValue();
 
-    let diagnostics = showInProblems ? languages.createDiagnosticCollection("TODOs") : null;
+    const diagnostics: DiagnosticCollection | undefined = showInProblems
+      ? languages.createDiagnosticCollection("TODOs")
+      : undefined;
 
     for (let todo of todos) {
-      if (showInProblems) {
+      if (showInProblems && diagnostics) {
         try {
-          let fileUri = todo.getFile().getFile().uri;
-          let prevDiagnostics = diagnostics.get(fileUri) || [];
+          const fileUri = todo.getFile().getFile().uri;
+          const prevDiagnostics = diagnostics.get(fileUri) || [];
           // The array returned by `diagnostics.get` is read-only, so we make a shallow copy
-          let diags = [].concat(prevDiagnostics);
+          const diags: Diagnostic[] = [...prevDiagnostics];
           diags.push(new Diagnostic(
             new Range(todo.getLineNumber() - 1, 0, todo.getLineNumber() - 1, Number.MAX_VALUE), 
             todo.getContent(), 

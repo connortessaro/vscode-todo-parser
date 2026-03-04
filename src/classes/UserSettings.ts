@@ -65,8 +65,9 @@ export class UserSettings {
    * @param folder Folder name to check.
    */
   isFolderEligible(folder: string): boolean {
-    if(folder.length == 0)
-      return true; 
+    if(folder == null || folder == "")
+      return true // if folder name is empty, we consider it eligible (e.g. root folder)
+
     return !this.FolderExclusions.contains(folder);
   }
 
@@ -83,16 +84,23 @@ export class UserSettings {
     return !this.Exclusions.contains(ext);
   }
 
-  getExecutablePaths(): string[] {
+  getExecutablePaths(): string[] | undefined {
     if(this.Only.size() > 0) {
-      let rs = [];      
-      for(let item of this.Only.getValue()) {
-        try {
-          let path = FileUri.fromString(workspace.rootPath + "/" + item).getPath();
-          rs.push(path);
-        }
-        catch (error) {
-          // ignore this one
+      const folders = workspace.workspaceFolders;
+      if (!folders || folders.length === 0) {
+        return undefined;
+      }
+
+      const rs: string[] = [];
+      for (const folder of folders) {
+        for(let item of this.Only.getValue()) {
+          try {
+            const path = FileUri.fromString(`${folder.uri.fsPath}/${item}`).getPath();
+            rs.push(path);
+          }
+          catch (error) {
+            // ignore this one
+          }
         }
       }
       return rs;      
@@ -177,12 +185,33 @@ export class SetSettingEntry<T extends Array<any>> extends SettingEntry<T> {
 
 type MarkerSettingTuple = [string, string | number];
 type MarkerType = Array<string|MarkerSettingTuple>;
+export default MarkerType;
 
-export class MarkersSettingEntry extends SetSettingEntry<string[]> {
+export class MarkersSettingEntry extends SetSettingEntry<MarkerType> {
   private DEFAULT_SEVERITY = DiagnosticSeverity.Hint;
   private priorities: {[index: string]: number} = {};
 
-  setValue(value: MarkerType): boolean {
+  protected ensureUnique() {
+    const value = this.getValue();
+    if (!value) {
+      return;
+    }
+
+    const seen: {[index: string]: true} = {};
+    const unique: MarkerType = [];
+    for (let i = 0; i < value.length; i++) {
+      const item = value[i];
+      const key = typeof(item) === "string" ? item : item[0];
+      if (!seen[key]) {
+        seen[key] = true;
+        unique.push(item);
+      }
+    }
+
+    this.value = unique;
+  }
+
+  setValue(value: MarkerType | undefined): boolean {
     this.priorities = {};
 
     // If value is undefined or null, make our lives easier and set it to an empty array
@@ -223,8 +252,8 @@ export class MarkersSettingEntry extends SetSettingEntry<string[]> {
       return Math.min(Math.max(<number>priority, DiagnosticSeverity.Error), DiagnosticSeverity.Hint);
     }
     else {
-      let value = DiagnosticSeverity[<string>priority];
-      return value ? value : this.DEFAULT_SEVERITY;
+      const value = (DiagnosticSeverity as unknown as Record<string, DiagnosticSeverity | undefined>)[priority];
+      return value !== undefined ? value : this.DEFAULT_SEVERITY;
     }
   }
 }

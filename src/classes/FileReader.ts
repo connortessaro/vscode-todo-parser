@@ -1,12 +1,8 @@
-import {workspace, window, TextDocument, Uri, CancellationToken} from 'vscode';
+import {workspace, window, TextDocument, Uri, CancellationToken, RelativePattern, FileType as VSCodeFileType} from 'vscode';
 import {FileType} from '../types/all';
 import {UserSettings} from './UserSettings';
-import {Logger} from './Logger';
-import {FileFilter} from './FileFilter';
 import {READ_FILE_CHUNK_SIZE} from '../const/all';
 import {sliceArray, getFolderName, getFileExtension} from '../utils/all';
-var fs = require('fs');
-var path = require('path');
 
 type ReadFilesCallback = (readFiles: FileType[], progress: number, error?:any) => void;
 type FinishCallback = () => void;
@@ -18,7 +14,7 @@ export class FileReader {
   static readCurrentFile(): Promise<FileType[]> {
     return new Promise(function (resolve, reject) {
       if(!window.activeTextEditor) {
-        //reject("Failed to get active editor");
+        reject("Failed to get active editor");
         return;
       }
       let doc = window.activeTextEditor.document;
@@ -36,20 +32,34 @@ export class FileReader {
    */
   static readProjectFiles(callback: ReadFilesCallback, finish: FinishCallback, token?: CancellationToken) {
       let roots = UserSettings.getInstance().getExecutablePaths();
-      if(!roots)
-        roots = [workspace.rootPath];
-      if (!roots) {
+      if (!roots || roots.length === 0)
+        roots = FileReader.getWorkspaceRoots();
+      if (!roots || roots.length === 0) {
         callback([], 0, "Cannot get root folder.");
         finish();
         return;
       }
 
-      let fileNames = [];
-      for(let r of roots) {
-        fileNames = fileNames.concat(FileReader.findFilesInPath(r));
-      }
-      let slices = sliceArray(fileNames, READ_FILE_CHUNK_SIZE);
-      FileReader.readFileLoop(slices, 0, callback, finish, token);
+      Promise.all(roots.map((root) => FileReader.findFilesInPath(root, token))).then(
+        (filesByRoot: string[][]) => {
+          if (token && token.isCancellationRequested) {
+            finish();
+            return;
+          }
+
+          let fileNames: string[] = [];
+          for (let i = 0; i < filesByRoot.length; i++) {
+            fileNames = fileNames.concat(filesByRoot[i]);
+          }
+
+          let slices = sliceArray(fileNames, READ_FILE_CHUNK_SIZE);
+          FileReader.readFileLoop(slices, 0, callback, finish, token);
+        },
+        (reason) => {
+          callback([], 0, reason);
+          finish();
+        }
+      );
   }
 
   static readProjectFilesInDir(root: string, callback: ReadFilesCallback, finish: FinishCallback, token?: CancellationToken) {
@@ -59,9 +69,21 @@ export class FileReader {
         return;
       }
 
-      let fileNames = FileReader.findFilesInPath(root);
-      let slices = sliceArray(fileNames, READ_FILE_CHUNK_SIZE);
-      FileReader.readFileLoop(slices, 0, callback, finish, token);
+      FileReader.findFilesInPath(root, token).then(
+        (fileNames: string[]) => {
+          if (token && token.isCancellationRequested) {
+            finish();
+            return;
+          }
+
+          let slices = sliceArray(fileNames, READ_FILE_CHUNK_SIZE);
+          FileReader.readFileLoop(slices, 0, callback, finish, token);
+        },
+        (reason) => {
+          callback([], 0, reason);
+          finish();
+        }
+      );
   }
 
   /**
@@ -94,36 +116,59 @@ export class FileReader {
    * of a file.
    * @param root  Find starting point.
    */
-  private static findFilesInPath(root: string): string[] {
-    if (!fs.existsSync(root) || (root != workspace.rootPath && !UserSettings.getInstance().isFolderEligible(getFolderName(root)))) { // path not exists
-      return [];
+  private static findFilesInPath(root: string, token?: CancellationToken): Thenable<string[]> {
+    if (!root || (!FileReader.isWorkspaceRoot(root) && !UserSettings.getInstance().isFolderEligible(getFolderName(root)))) {
+      return Promise.resolve([]);
     }
 
-    // TODO: Try using workspace.findFiles(...) instead of node fs methods
-    let files = fs.readdirSync(root);
-    let names = [];
-    for (let i = 0; i < files.length; i++) {
-      let filename = path.join(root, files[i]);
-      let stat = fs.lstatSync(filename);
-      if (stat.isDirectory()) {
-        names = names.concat(FileReader.findFilesInPath(filename)); // go into sub-folder
-      }
-      else {
-        let ext = getFileExtension(filename);
-        // Check early to avoid triggering extension of excluded languages
-        if(UserSettings.getInstance().isFileEligible(ext)) {
-          names.push(filename);
+    return workspace.fs.stat(Uri.file(root)).then(
+      (stat) => {
+        if ((stat.type & VSCodeFileType.Directory) === 0) {
+          return [];
         }
+
+        return workspace.findFiles(new RelativePattern(root, '**/*'), undefined, undefined, token).then((uris) => {
+          const names: string[] = [];
+          const settings = UserSettings.getInstance();
+          const excludedFolders = new Set(settings.FolderExclusions.getValue());
+
+          for (let i = 0; i < uris.length; i++) {
+            const fileName = uris[i].fsPath;
+            if (FileReader.isInExcludedFolder(fileName, excludedFolders)) {
+              continue;
+            }
+
+            const ext = getFileExtension(fileName);
+            if (settings.isFileEligible(ext)) {
+              names.push(fileName);
+            }
+          }
+          return names;
+        });
+      },
+      () => []
+    );
+  }
+
+  private static isInExcludedFolder(fileName: string, excludedFolders: Set<string>): boolean {
+    if (excludedFolders.size === 0) {
+      return false;
+    }
+
+    const segments = fileName.replace(/\\/g, '/').split('/');
+    for (let i = 0; i < segments.length - 1; i++) {
+      if (excludedFolders.has(segments[i])) {
+        return true;
       }
     }
-    return names;
+    return false;
   }
 
   /**
    * Read files given full file paths. Returns a list of file read successfully.
    * @param uris_or_strings File paths as string or Uri array.
    */
-  private static readFileFromNames(uris_or_strings): Promise<FileType[]> {
+  private static readFileFromNames(uris_or_strings: Array<Uri | string>): Promise<FileType[]> {
     return new Promise(function (resolve, reject) {
       let docs: FileType[] = [];
       // Count of successfully opened files
@@ -134,7 +179,13 @@ export class FileReader {
       function totalCount() { return openedCount + failedCount; }
 
       for (let uri of uris_or_strings) {
-        let docPrm = workspace.openTextDocument(uri);
+        let docPrm: Thenable<TextDocument>;
+        if (typeof uri === "string") {
+          docPrm = workspace.openTextDocument(uri);
+        }
+        else {
+          docPrm = workspace.openTextDocument(uri);
+        }
         docPrm.then(
           function (doc: TextDocument) {
             if(doc) // File maybe corrupted
@@ -162,5 +213,13 @@ export class FileReader {
       if (uris_or_strings.length == 0)
         resolve(docs); // no URIs at all
     });
+  }
+
+  private static getWorkspaceRoots(): string[] {
+    return (workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
+  }
+
+  private static isWorkspaceRoot(root: string): boolean {
+    return FileReader.getWorkspaceRoots().indexOf(root) >= 0;
   }
 }

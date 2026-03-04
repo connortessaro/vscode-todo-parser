@@ -42,13 +42,12 @@ export class ParseAllFilesCommand implements CommandType {
     return new Promise<any>(function (resolve, reject) {
       OutputWriter.begin();
       let totalFiles = 0;
-      let results = [], errors = [];
+      let errors: unknown[] = [];
       FileReader.readProjectFiles(
         (files: FileType[], progress, error) => {
           if (files.length > 0) {
             files = FileFilter.filter(files);
             let todos = Parser.parse(files);
-            results = results.concat(todos);
             OutputWriter.writeTodo(todos);
             StatusBarManager.getInstance().setWorking(`${WORKING_ICON} ${progress}%`, "Click to cancel");
             totalFiles += todos.length;
@@ -78,14 +77,13 @@ export class ParseAllFilesInDirCommand {
     return new Promise<any>(function (resolve, reject) {
       OutputWriter.begin();
       let totalFiles = 0;
-      let results = [], errors = [];
+      let errors: unknown[] = [];
       FileReader.readProjectFilesInDir(
         root,
         (files: FileType[], progress, error) => {
           if (!error) {
             files = FileFilter.filter(files);
             let todos = Parser.parse(files);
-            results = results.concat(todos);
             OutputWriter.writeTodo(todos);
             StatusBarManager.getInstance().setWorking(`${WORKING_ICON} ${progress}%`, "Click to cancel");
             totalFiles += todos.length;

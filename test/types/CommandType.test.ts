@@ -139,7 +139,7 @@ suite("Types - CommandType", function () { // do not use lambda here or timeout(
       assert.ok(editor, "There is no active editor.");
 
       CommandHandler.handle(new ParseCurrentFileCommand()).then(
-        (todoCount) => {
+        (todoCount) => {``
           assert.strictEqual(typeof todoCount, "number", "Error parsing, no result.");
           assert.equal(<number>todoCount, expect);
           done();
